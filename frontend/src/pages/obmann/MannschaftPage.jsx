@@ -18,9 +18,10 @@ export default function MannschaftPage() {
   const [error, setError] = useState('')
 
   const load = () => {
-    if (!jaegerschaftId) return
+    if (!jaegerschaftId) { setLoading(false); return }
     apiFetch(`/schuetzen?jaegerschaftId=${jaegerschaftId}`)
       .then(setSchuetzen)
+      .catch(err => setError(err.message))
       .finally(() => setLoading(false))
   }
 
@@ -55,6 +56,14 @@ export default function MannschaftPage() {
   }
 
   if (loading) return <p className="text-gray-400 text-sm">Laden…</p>
+  if (!jaegerschaftId) return (
+    <div className="max-w-xl">
+      <h1 className="text-2xl font-semibold text-gray-900 mb-4">Mannschaftsanmeldung</h1>
+      <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 text-sm text-amber-800">
+        Ihrem Account ist noch keine Jägerschaft zugewiesen. Bitte wenden Sie sich an den Kreisschießwart.
+      </div>
+    </div>
+  )
 
   return (
     <div className="max-w-3xl">

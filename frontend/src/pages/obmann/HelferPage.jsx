@@ -24,9 +24,10 @@ export default function HelferPage() {
   const [error, setError] = useState('')
 
   const load = () => {
-    if (!jaegerschaftId) return
+    if (!jaegerschaftId) { setLoading(false); return }
     apiFetch(`/helfer?jaegerschaftId=${jaegerschaftId}`)
       .then(setHelfer)
+      .catch(err => setError(err.message))
       .finally(() => setLoading(false))
   }
   useEffect(load, [jaegerschaftId])
@@ -54,6 +55,14 @@ export default function HelferPage() {
   const besetzt = (aufgabe) => helfer.find(h => h.aufgabe === aufgabe && h.status !== 'ABGESAGT')
 
   if (loading) return <p className="text-gray-400 text-sm">Laden…</p>
+  if (!jaegerschaftId) return (
+    <div className="max-w-xl">
+      <h1 className="text-2xl font-semibold text-gray-900 mb-4">Helferplanung</h1>
+      <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 text-sm text-amber-800">
+        Ihrem Account ist noch keine Jägerschaft zugewiesen. Bitte wenden Sie sich an den Kreisschießwart.
+      </div>
+    </div>
+  )
 
   return (
     <div className="max-w-2xl">
