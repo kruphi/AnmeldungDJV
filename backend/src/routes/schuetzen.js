@@ -4,12 +4,23 @@ import { authenticate } from '../middleware/auth.js'
 
 const router = Router()
 
-// GET /api/schuetzen?jaegerschaftId=X
+// GET /api/schuetzen?jaegerschaftId=X  (oder ohne Parameter für Admin → alle)
 router.get('/', authenticate, async (req, res) => {
+  // Admin ohne Filter → alle Schützen mit Jägerschaft-Info
+  if (req.user.role === 'ADMIN' && !req.query.jaegerschaftId) {
+    const schuetzen = await prisma.schuetze.findMany({
+      include: {
+        jaegerschaft: { select: { id: true, name: true } },
+        ergebnisse: true,
+      },
+      orderBy: [{ jaegerschaft: { name: 'asc' } }, { name: 'asc' }],
+    })
+    return res.json(schuetzen)
+  }
+
   const jaegerschaftId = parseInt(req.query.jaegerschaftId)
   if (!Number.isInteger(jaegerschaftId)) return res.status(400).json({ error: 'jaegerschaftId muss eine Zahl sein' })
 
-  // Obmann darf nur eigene Jägerschaft sehen
   if (req.user.role !== 'ADMIN' && req.user.jaegerschaftId !== jaegerschaftId) {
     return res.status(403).json({ error: 'Kein Zugriff' })
   }
@@ -17,7 +28,7 @@ router.get('/', authenticate, async (req, res) => {
   const schuetzen = await prisma.schuetze.findMany({
     where: { jaegerschaftId },
     include: { ergebnisse: true },
-    orderBy: { name: 'asc' }
+    orderBy: { name: 'asc' },
   })
   res.json(schuetzen)
 })
