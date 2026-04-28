@@ -61,3 +61,5 @@ router.get('/me', authenticate, async (req, res) => {
   if (!user) return res.status(401).json({ error: 'Benutzer nicht gefunden' })
   res.json(user)
 })
+
+export default router
