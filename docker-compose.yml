@@ -4,6 +4,7 @@ services:
       context: ./frontend
       args:
         VITE_APP_TITLE: ${VITE_APP_TITLE:-JagdSchießen}
+    container_name: ${APP_NAME}-frontend
     restart: unless-stopped
     networks:
       - web
@@ -13,6 +14,7 @@ services:
 
   backend:
     build: ./backend
+    container_name: ${APP_NAME}-backend
     restart: unless-stopped
     environment:
       DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
@@ -28,6 +30,7 @@ services:
 
   db:
     image: postgres:16-alpine
+    container_name: ${APP_NAME}-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${DB_USER}
