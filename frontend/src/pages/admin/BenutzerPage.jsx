@@ -180,6 +180,11 @@ export default function BenutzerPage() {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900 truncate">{u.name}</p>
                 <p className="text-xs text-gray-400">{u.email}{u.jaegerschaft ? ` · ${u.jaegerschaft.name}` : ''}</p>
+                <p className="text-xs text-gray-300 mt-0.5">
+                  {u.lastLoginAt
+                    ? `Letzter Login: ${new Date(u.lastLoginAt).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' })}`
+                    : 'Noch nie angemeldet'}
+                </p>
               </div>
               <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                 u.role === 'ADMIN' ? 'bg-jagd-100 text-jagd-700' : 'bg-gray-100 text-gray-600'

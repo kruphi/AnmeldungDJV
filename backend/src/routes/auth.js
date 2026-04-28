@@ -27,6 +27,8 @@ router.post('/login', async (req, res) => {
   const valid = await bcrypt.compare(password, user.passwordHash)
   if (!valid) return res.status(401).json({ error: 'Ungültige Anmeldedaten' })
 
+  await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } })
+
   const token = jwt.sign(
     { id: user.id, role: user.role, jaegerschaftId: user.jaegerschaftId },
     process.env.JWT_SECRET,

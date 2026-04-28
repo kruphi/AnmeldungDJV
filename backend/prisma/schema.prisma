@@ -17,6 +17,7 @@ model User {
   role           Role          @default(OBMANN)
   jaegerschaft   Jaegerschaft? @relation(fields: [jaegerschaftId], references: [id])
   jaegerschaftId Int?
+  lastLoginAt    DateTime?
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 }

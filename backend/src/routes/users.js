@@ -12,7 +12,7 @@ router.get('/', authenticate, requireAdmin, async (req, res) => {
     select: {
       id: true, name: true, email: true, role: true,
       jaegerschaft: { select: { id: true, name: true } },
-      createdAt: true,
+      lastLoginAt: true, createdAt: true,
     },
   })
   res.json(users)
@@ -46,7 +46,7 @@ router.post('/', authenticate, requireAdmin, async (req, res) => {
     select: {
       id: true, name: true, email: true, role: true,
       jaegerschaft: { select: { id: true, name: true } },
-      createdAt: true,
+      lastLoginAt: true, createdAt: true,
     },
   })
   res.status(201).json(user)
@@ -78,7 +78,7 @@ router.patch('/:id', authenticate, requireAdmin, async (req, res) => {
     select: {
       id: true, name: true, email: true, role: true,
       jaegerschaft: { select: { id: true, name: true } },
-      createdAt: true,
+      lastLoginAt: true, createdAt: true,
     },
   })
   res.json(user)
