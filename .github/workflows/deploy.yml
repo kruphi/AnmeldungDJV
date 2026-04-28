@@ -16,9 +16,14 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: 22
           script: |
-            cd /opt/kruempelmann/jagdscheissen
-            git pull origin main
-            docker compose build
-            docker compose up -d
+            # Alle Instanzen dieses Repos auf dem Server finden und updaten
+            for dir in /opt/kruempelmann/*/; do
+              if git -C "$dir" remote get-url origin 2>/dev/null | grep -q "AnmeldungDJV"; then
+                echo "→ Update: $dir"
+                git -C "$dir" pull origin main
+                docker compose -f "${dir}docker-compose.yml" build
+                docker compose -f "${dir}docker-compose.yml" up -d
+                echo "✓ $dir deployed"
+              fi
+            done
             docker image prune -f
-            echo "✓ JagdSchießen deployed"
