@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router'
-import { apiFetch } from '../../hooks/useApi'
+import { apiFetch } from '../../lib/api'
 
 export default function AdminDashboardPage() {
   const [veranstaltungen, setVeranstaltungen] = useState([])

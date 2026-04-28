@@ -1,14 +1,13 @@
 import { Router } from 'express'
-import { PrismaClient } from '@prisma/client'
-import { authenticate, requireOwnJaegerschaft } from '../middleware/auth.js'
+import prisma from '../lib/prisma.js'
+import { authenticate } from '../middleware/auth.js'
 
 const router = Router()
-const prisma = new PrismaClient()
 
 // GET /api/schuetzen?jaegerschaftId=X
 router.get('/', authenticate, async (req, res) => {
   const jaegerschaftId = parseInt(req.query.jaegerschaftId)
-  if (!jaegerschaftId) return res.status(400).json({ error: 'jaegerschaftId erforderlich' })
+  if (!Number.isInteger(jaegerschaftId)) return res.status(400).json({ error: 'jaegerschaftId muss eine Zahl sein' })
 
   // Obmann darf nur eigene Jägerschaft sehen
   if (req.user.role !== 'ADMIN' && req.user.jaegerschaftId !== jaegerschaftId) {

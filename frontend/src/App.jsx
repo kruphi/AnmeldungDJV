@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router'
 import { AuthProvider, useAuth } from './context/AuthContext'
 
 import LoginPage from './pages/LoginPage'
+import SetupPage from './pages/SetupPage'
 import Layout from './components/layout/Layout'
 
 // Obmann-Seiten
@@ -19,8 +20,9 @@ import JaegerschaftenPage from './pages/admin/JaegerschaftenPage'
 import BenutzerPage from './pages/admin/BenutzerPage'
 
 function PrivateRoute({ children, adminOnly = false }) {
-  const { user } = useAuth()
+  const { user, setupRequired } = useAuth()
   if (user === undefined) return <div className="flex items-center justify-center h-screen text-gray-400">Laden…</div>
+  if (setupRequired) return <Navigate to="/setup" replace />
   if (!user) return <Navigate to="/login" replace />
   if (adminOnly && user.role !== 'ADMIN') return <Navigate to="/" replace />
   return children
@@ -32,6 +34,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/setup" element={<SetupPage />} />
 
           <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
             {/* Obmann */}

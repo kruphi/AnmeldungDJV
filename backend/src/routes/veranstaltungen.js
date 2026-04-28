@@ -1,9 +1,8 @@
 import { Router } from 'express'
-import { PrismaClient } from '@prisma/client'
+import prisma from '../lib/prisma.js'
 import { authenticate, requireAdmin } from '../middleware/auth.js'
 
 const router = Router()
-const prisma = new PrismaClient()
 
 // GET /api/veranstaltungen
 router.get('/', authenticate, async (req, res) => {
@@ -44,8 +43,10 @@ router.get('/:id', authenticate, async (req, res) => {
 // POST /api/veranstaltungen  (nur Admin)
 router.post('/', authenticate, requireAdmin, async (req, res) => {
   const { name, datum, ort, beschreibung } = req.body
+  const parsedDatum = new Date(datum)
+  if (isNaN(parsedDatum.getTime())) return res.status(400).json({ error: 'Ungültiges Datum' })
   const v = await prisma.veranstaltung.create({
-    data: { name, datum: new Date(datum), ort, beschreibung }
+    data: { name, datum: parsedDatum, ort, beschreibung }
   })
   res.status(201).json(v)
 })
@@ -53,9 +54,14 @@ router.post('/', authenticate, requireAdmin, async (req, res) => {
 // PATCH /api/veranstaltungen/:id  (nur Admin)
 router.patch('/:id', authenticate, requireAdmin, async (req, res) => {
   const { name, datum, ort, beschreibung, status } = req.body
+  let parsedDatum
+  if (datum) {
+    parsedDatum = new Date(datum)
+    if (isNaN(parsedDatum.getTime())) return res.status(400).json({ error: 'Ungültiges Datum' })
+  }
   const v = await prisma.veranstaltung.update({
     where: { id: parseInt(req.params.id) },
-    data: { name, datum: datum ? new Date(datum) : undefined, ort, beschreibung, status }
+    data: { name, datum: parsedDatum, ort, beschreibung, status }
   })
   res.json(v)
 })

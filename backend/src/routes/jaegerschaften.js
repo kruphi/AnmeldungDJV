@@ -1,18 +1,22 @@
 import { Router } from 'express'
-import { PrismaClient } from '@prisma/client'
+import prisma from '../lib/prisma.js'
 import { authenticate, requireAdmin } from '../middleware/auth.js'
 
 const router = Router()
-const prisma = new PrismaClient()
 
 // GET /api/jaegerschaften?veranstaltungId=X
+// Admin ohne veranstaltungId: alle Jägerschaften
 router.get('/', authenticate, async (req, res) => {
-  const veranstaltungId = parseInt(req.query.veranstaltungId)
+  const veranstaltungId = req.query.veranstaltungId ? parseInt(req.query.veranstaltungId) : undefined
 
-  // Obmann: nur eigene Jägerschaft
-  const where = req.user.role === 'ADMIN'
-    ? { veranstaltungId }
-    : { veranstaltungId, id: req.user.jaegerschaftId }
+  let where = {}
+  if (veranstaltungId) {
+    where.veranstaltungId = veranstaltungId
+  }
+  if (req.user.role !== 'ADMIN') {
+    where.id = req.user.jaegerschaftId
+    if (veranstaltungId) where.veranstaltungId = veranstaltungId
+  }
 
   const jaegerschaften = await prisma.jaegerschaft.findMany({
     where,

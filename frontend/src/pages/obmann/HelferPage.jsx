@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
-import { apiFetch } from '../../hooks/useApi'
+import { apiFetch } from '../../lib/api'
 
 const AUFGABEN = ['STANDAUFSICHT', 'SCHEIBENSETZER', 'ZEITNAHME_PROTOKOLL']
 const AUFGABE_LABEL = {

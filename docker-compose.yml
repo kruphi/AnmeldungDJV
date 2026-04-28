@@ -1,6 +1,9 @@
 services:
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        VITE_APP_TITLE: ${VITE_APP_TITLE:-JagdSchießen}
     restart: unless-stopped
     networks:
       - web

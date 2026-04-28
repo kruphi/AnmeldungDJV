@@ -1,6 +1,6 @@
 // VeranstaltungPage.jsx
 import { useState, useEffect } from 'react'
-import { apiFetch } from '../../hooks/useApi'
+import { apiFetch } from '../../lib/api'
 
 export default function VeranstaltungPage() {
   const [veranstaltungen, setVeranstaltungen] = useState([])

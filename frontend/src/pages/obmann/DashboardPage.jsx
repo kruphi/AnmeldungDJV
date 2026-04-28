@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router'
 import { useAuth } from '../../context/AuthContext'
-import { apiFetch } from '../../hooks/useApi'
+import { apiFetch } from '../../lib/api'
 
 const STATUS_LABEL = {
   AUSSTEHEND: { label: 'Ausstehend', cls: 'bg-amber-100 text-amber-700' },

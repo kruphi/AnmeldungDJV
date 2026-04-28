@@ -1,6 +1,6 @@
 // JaegerschaftenPage.jsx
 import { useState, useEffect } from 'react'
-import { apiFetch } from '../../hooks/useApi'
+import { apiFetch } from '../../lib/api'
 
 export default function JaegerschaftenPage() {
   const [veranstaltungen, setVeranstaltungen] = useState([])

@@ -1,4 +1,3 @@
-// Zentrale API-Hilfsfunktion – alle Requests laufen hierüber
 export async function apiFetch(path, options = {}) {
   const res = await fetch(`/api${path}`, {
     credentials: 'include',

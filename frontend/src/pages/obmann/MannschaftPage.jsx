@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
-import { apiFetch } from '../../hooks/useApi'
+import { apiFetch } from '../../lib/api'
 
 const DISZIPLIN_LABEL = { BUECHSE: 'Büchse', FLINTE: 'Flinte', PISTOLE: 'Pistole', KOMBINATION: 'Kombination' }
 const DJV_GRUPPE_LABEL = { GRUPPE_A: 'Gruppe A – Büchse Pflicht', GRUPPE_B: 'Gruppe B – Flinte Pflicht', GRUPPE_C: 'Gruppe C – Kombination' }

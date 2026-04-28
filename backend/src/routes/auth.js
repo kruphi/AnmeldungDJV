@@ -1,11 +1,10 @@
 import { Router } from 'express'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-import { PrismaClient } from '@prisma/client'
+import prisma from '../lib/prisma.js'
 import { authenticate } from '../middleware/auth.js'
 
 const router = Router()
-const prisma = new PrismaClient()
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -59,5 +58,6 @@ router.get('/me', authenticate, async (req, res) => {
       jaegerschaft: { select: { id: true, name: true } }
     }
   })
+  if (!user) return res.status(401).json({ error: 'Benutzer nicht gefunden' })
   res.json(user)
 })

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
-import { apiFetch } from '../../hooks/useApi'
+import { apiFetch } from '../../lib/api'
 
 function fmt(dt) {
   return new Date(dt).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })

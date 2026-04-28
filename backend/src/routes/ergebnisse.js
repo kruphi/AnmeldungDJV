@@ -1,13 +1,13 @@
 import { Router } from 'express'
-import { PrismaClient } from '@prisma/client'
+import prisma from '../lib/prisma.js'
 import { authenticate, requireAdmin } from '../middleware/auth.js'
 
 const router = Router()
-const prisma = new PrismaClient()
 
 // GET /api/ergebnisse?jaegerschaftId=X
 router.get('/', authenticate, async (req, res) => {
   const jaegerschaftId = parseInt(req.query.jaegerschaftId)
+  if (!Number.isInteger(jaegerschaftId)) return res.status(400).json({ error: 'jaegerschaftId muss eine Zahl sein' })
 
   if (req.user.role !== 'ADMIN' && req.user.jaegerschaftId !== jaegerschaftId) {
     return res.status(403).json({ error: 'Kein Zugriff' })

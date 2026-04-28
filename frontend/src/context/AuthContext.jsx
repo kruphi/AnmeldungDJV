@@ -3,12 +3,23 @@ import { createContext, useContext, useState, useEffect } from 'react'
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(undefined) // undefined = noch nicht geladen
+  const [user, setUser] = useState(undefined)       // undefined = noch nicht geprüft
+  const [setupRequired, setSetupRequired] = useState(false)
 
   useEffect(() => {
-    fetch('/api/auth/me', { credentials: 'include' })
+    // Erst Setup-Status prüfen, dann Auth-Status
+    fetch('/api/setup/status')
       .then(r => r.ok ? r.json() : null)
-      .then(data => setUser(data))
+      .then(data => {
+        if (data?.setupRequired) {
+          setSetupRequired(true)
+          setUser(null)
+          return
+        }
+        return fetch('/api/auth/me', { credentials: 'include' })
+          .then(r => r.ok ? r.json() : null)
+          .then(me => setUser(me))
+      })
       .catch(() => setUser(null))
   }, [])
 
@@ -17,13 +28,14 @@ export function AuthProvider({ children }) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ email, password }),
     })
     if (!r.ok) {
       const err = await r.json()
       throw new Error(err.error)
     }
     const data = await r.json()
+    setSetupRequired(false)
     setUser(data)
     return data
   }
@@ -34,7 +46,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAdmin: user?.role === 'ADMIN' }}>
+    <AuthContext.Provider value={{ user, login, logout, setupRequired, isAdmin: user?.role === 'ADMIN' }}>
       {children}
     </AuthContext.Provider>
   )

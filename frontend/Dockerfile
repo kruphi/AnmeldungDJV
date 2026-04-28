@@ -1,8 +1,10 @@
 # Build
 FROM node:22-alpine AS build
 WORKDIR /app
-COPY package.json ./
-RUN npm install
+ARG VITE_APP_TITLE=JagdSchießen
+ENV VITE_APP_TITLE=$VITE_APP_TITLE
+COPY package.json package-lock.json ./
+RUN npm ci
 COPY . .
 RUN npm run build
 
