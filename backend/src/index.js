@@ -40,6 +40,7 @@ app.use(rateLimit({
   max: 100,
   standardHeaders: true,
   legacyHeaders: false,
+  message: { error: 'Zu viele Anfragen. Bitte kurz warten.' },
 }))
 
 // Login-Endpunkt: strenger Schutz gegen Brute-Force
