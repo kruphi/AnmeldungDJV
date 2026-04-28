@@ -1,13 +1,6 @@
-# Diesen Block in /opt/kruempelmann/server-infra/Caddyfile einfügen.
-# Das Script add-app.sh generiert NUR einen frontend-Block — dieser hier
-# wird stattdessen benötigt, weil /api/* direkt ans Backend muss.
-#
-# Container-Namen passen sich an den Ordner-Namen an (Docker Compose Standard):
-#   Ordner: /opt/kruempelmann/jagdscheissen → Prefix: jagdscheissen
+# Dieser Block wird automatisch durch deploy-tenant.sh generiert.
+# Nginx übernimmt das /api/*-Routing intern — kein separater Backend-Block nötig.
 
 jagdscheissen.kruempelmann.dev {
-    handle /api/* {
-        reverse_proxy jagdscheissen-backend-1:3001
-    }
     reverse_proxy jagdscheissen-frontend-1:80
 }

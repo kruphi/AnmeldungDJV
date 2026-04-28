@@ -31,7 +31,7 @@ The Vite dev server proxies `/api/*` to `http://localhost:3001`, so the frontend
 
 ## Environment
 
-Copy `.env.example` to `.env` and fill in `POSTGRES_PASSWORD` and `JWT_SECRET` (min. 32 chars, generate with `openssl rand -hex 32`).
+Copy `.env.example` to `.env`. In Produktion wird die `.env` automatisch durch `deploy-tenant.sh` erzeugt. Lokal manuell befüllen: `DB_PASSWORD` (beliebig) und `JWT_SECRET` (min. 32 Zeichen, `openssl rand -hex 32`).
 
 ## Database
 
@@ -46,6 +46,14 @@ npx prisma generate           # regenerate client after schema changes
 The Prisma schema lives at [backend/prisma/schema.prisma](backend/prisma/schema.prisma). The shared PrismaClient instance is in [backend/src/lib/prisma.js](backend/src/lib/prisma.js) — all route files import from there, nie `new PrismaClient()` direkt.
 
 ## Architecture
+
+### Netzwerk-Architektur (Produktion)
+```
+Internet → Caddy (web) → Nginx/Frontend (web + internal)
+                              ├── statische Dateien
+                              └── /api/* → Backend (internal only) → DB (internal)
+```
+Das Backend ist **nicht** im `web`-Netz — nur Nginx kann es erreichen. Nginx proxied `/api/*` intern an `http://backend:3001`. Caddy braucht deshalb keinen separaten Backend-Block, der Standard-`reverse_proxy`-Eintrag von `deploy-tenant.sh` reicht.
 
 ### Installation Wizard
 On first deploy (empty DB), `GET /api/setup/status` returns `{ setupRequired: true }`. `AuthContext` prüft das beim Start und leitet auf `/setup` weiter. Die `SetupPage` erstellt den ersten ADMIN-User via `POST /api/setup`. Sobald ein User existiert, ist der Endpunkt gesperrt (409). Kein Seed-Script mehr nötig.
