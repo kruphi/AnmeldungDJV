@@ -5,10 +5,8 @@
 @layer base {
   * {
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
   }
-
   body {
-    background-color: #F4F8F0;
+    @apply bg-gray-50 text-gray-900;
   }
 }
