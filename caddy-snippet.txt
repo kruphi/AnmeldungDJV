@@ -1,0 +1,11 @@
+# Diesen Block in deine bestehende Caddyfile unter /opt/kruempelmann/server-infra einfügen
+
+jagdscheissen.kruempelmann.dev {
+    # Frontend
+    reverse_proxy jagdscheissen-frontend-1:80
+
+    # API-Requests ans Backend
+    handle /api/* {
+        reverse_proxy jagdscheissen-backend-1:3001
+    }
+}

@@ -1,0 +1,146 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Benutzer & Rollen ─────────────────────────────────────────────────────
+
+model User {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  passwordHash String
+  name         String
+  role         Role      @default(OBMANN)
+  jaegerschaft Jaegerschaft? @relation(fields: [jaegerschaftId], references: [id])
+  jaegerschaftId Int?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+enum Role {
+  ADMIN       // Kreisschießwart – sieht alles
+  OBMANN      // Schießobmann – nur eigene Jägerschaft
+}
+
+// ─── Veranstaltung ─────────────────────────────────────────────────────────
+
+model Veranstaltung {
+  id          Int       @id @default(autoincrement())
+  name        String    // z.B. "Kreisschießen 2025"
+  datum       DateTime
+  ort         String
+  beschreibung String?
+  status      VeranstaltungStatus @default(PLANUNG)
+  gruppen     Gruppe[]
+  jaegerschaften Jaegerschaft[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+enum VeranstaltungStatus {
+  PLANUNG
+  ANMELDUNG
+  AKTIV
+  ABGESCHLOSSEN
+}
+
+// ─── Jägerschaft ───────────────────────────────────────────────────────────
+
+model Jaegerschaft {
+  id              Int           @id @default(autoincrement())
+  name            String
+  veranstaltung   Veranstaltung @relation(fields: [veranstaltungId], references: [id])
+  veranstaltungId Int
+  gruppe          Gruppe?       @relation(fields: [gruppeId], references: [id])
+  gruppeId        Int?
+  schuetzen       Schuetze[]
+  helfer          Helfer[]
+  obmaenner       User[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+// ─── Gruppen & Zeitplan ────────────────────────────────────────────────────
+
+model Gruppe {
+  id              Int           @id @default(autoincrement())
+  name            String        // z.B. "Gruppe 3"
+  stand           String        // z.B. "Stand B – Büchse 100m"
+  startzeit       DateTime
+  endzeit         DateTime
+  veranstaltung   Veranstaltung @relation(fields: [veranstaltungId], references: [id])
+  veranstaltungId Int
+  jaegerschaften  Jaegerschaft[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+// ─── Schützen ──────────────────────────────────────────────────────────────
+
+model Schuetze {
+  id              Int           @id @default(autoincrement())
+  name            String
+  mitgliedsnummer String
+  disziplin       Disziplin
+  djvGruppe       DjvGruppe
+  jaegerschaft    Jaegerschaft  @relation(fields: [jaegerschaftId], references: [id])
+  jaegerschaftId  Int
+  ergebnisse      Ergebnis[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+enum Disziplin {
+  BUECHSE
+  FLINTE
+  PISTOLE
+  KOMBINATION
+}
+
+enum DjvGruppe {
+  GRUPPE_A   // Büchse Pflicht
+  GRUPPE_B   // Flinte Pflicht
+  GRUPPE_C   // Kombination
+}
+
+// ─── Helfer ────────────────────────────────────────────────────────────────
+
+model Helfer {
+  id              Int           @id @default(autoincrement())
+  name            String
+  aufgabe         HelferAufgabe
+  status          HelferStatus  @default(AUSSTEHEND)
+  jaegerschaft    Jaegerschaft  @relation(fields: [jaegerschaftId], references: [id])
+  jaegerschaftId  Int
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+enum HelferAufgabe {
+  STANDAUFSICHT
+  SCHEIBENSETZER
+  ZEITNAHME_PROTOKOLL
+}
+
+enum HelferStatus {
+  AUSSTEHEND
+  BESTAETIGT
+  ABGESAGT
+}
+
+// ─── Ergebnisse ────────────────────────────────────────────────────────────
+
+model Ergebnis {
+  id          Int       @id @default(autoincrement())
+  schuetze    Schuetze  @relation(fields: [schuetzeId], references: [id])
+  schuetzeId  Int
+  punkte      Int
+  disziplin   Disziplin
+  notizen     String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
