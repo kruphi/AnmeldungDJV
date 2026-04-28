@@ -35,23 +35,17 @@ app.use(cors({
 
 // ─── Security ──────────────────────────────────────────────────────────────
 app.use(helmet())
-app.use(rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 500,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Zu viele Anfragen. Bitte kurz warten.' },
-}))
 
-// Login-Endpunkt: strenger Schutz gegen Brute-Force
-const loginLimiter = rateLimit({
+// Nur Login gegen Brute-Force absichern. Ein allgemeiner Limiter funktioniert
+// hinter Nginx/Docker nicht sinnvoll, weil alle Requests von derselben
+// internen Docker-IP kommen und sich einen einzigen Bucket teilen würden.
+app.use('/api/auth/login', rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Zu viele Anmeldeversuche. Bitte 15 Minuten warten.' },
-})
-app.use('/api/auth/login', loginLimiter)
+}))
 
 // ─── Middleware ─────────────────────────────────────────────────────────────
 app.use(express.json({ limit: '10kb' }))
