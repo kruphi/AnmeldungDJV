@@ -16,6 +16,7 @@ import helferRoutes from './routes/helfer.js'
 import ergebnisRoutes from './routes/ergebnisse.js'
 import mannschaftRoutes from './routes/mannschaften.js'
 import mannschaftKategorienRoutes from './routes/mannschaft-kategorien.js'
+import helferKategorienRoutes from './routes/helfer-kategorien.js'
 
 // ─── Startup-Guard ──────────────────────────────────────────────────────────
 if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
@@ -67,6 +68,7 @@ app.use('/api/helfer', helferRoutes)
 app.use('/api/ergebnisse', ergebnisRoutes)
 app.use('/api/mannschaften', mannschaftRoutes)
 app.use('/api/mannschaft-kategorien', mannschaftKategorienRoutes)
+app.use('/api/helfer-kategorien', helferKategorienRoutes)
 
 // ─── Health ─────────────────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }))

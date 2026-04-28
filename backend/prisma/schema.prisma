@@ -140,21 +140,22 @@ model MannschaftSchuetze {
 
 // ─── Helfer ────────────────────────────────────────────────────────────────
 
-model Helfer {
-  id             Int           @id @default(autoincrement())
-  name           String
-  aufgabe        HelferAufgabe
-  status         HelferStatus  @default(AUSSTEHEND)
-  jaegerschaft   Jaegerschaft  @relation(fields: [jaegerschaftId], references: [id])
-  jaegerschaftId Int
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+model HelferKategorie {
+  id     Int      @id @default(autoincrement())
+  name   String   @unique
+  helfer Helfer[]
 }
 
-enum HelferAufgabe {
-  STANDAUFSICHT
-  SCHEIBENSETZER
-  ZEITNAHME_PROTOKOLL
+model Helfer {
+  id             Int             @id @default(autoincrement())
+  name           String
+  kategorie      HelferKategorie @relation(fields: [kategorieId], references: [id])
+  kategorieId    Int
+  status         HelferStatus    @default(AUSSTEHEND)
+  jaegerschaft   Jaegerschaft    @relation(fields: [jaegerschaftId], references: [id])
+  jaegerschaftId Int
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 }
 
 enum HelferStatus {

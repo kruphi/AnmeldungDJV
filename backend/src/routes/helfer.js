@@ -4,7 +4,6 @@ import { authenticate, requireAdmin } from '../middleware/auth.js'
 
 const router = Router()
 
-// GET /api/helfer?jaegerschaftId=X  — alle Helfer einer Jägerschaft
 router.get('/', authenticate, async (req, res) => {
   const jaegerschaftId = parseInt(req.query.jaegerschaftId)
   if (!Number.isInteger(jaegerschaftId)) return res.status(400).json({ error: 'jaegerschaftId muss eine Zahl sein' })
@@ -15,21 +14,21 @@ router.get('/', authenticate, async (req, res) => {
 
   const helfer = await prisma.helfer.findMany({
     where: { jaegerschaftId },
-    orderBy: { aufgabe: 'asc' }
+    include: { kategorie: true },
+    orderBy: { kategorie: { name: 'asc' } },
   })
   res.json(helfer)
 })
 
-// GET /api/helfer/uebersicht?veranstaltungId=X  — Admin: alle Jägerschaften
 router.get('/uebersicht', authenticate, requireAdmin, async (req, res) => {
   const veranstaltungId = parseInt(req.query.veranstaltungId)
   const jaegerschaften = await prisma.jaegerschaft.findMany({
     where: { veranstaltungId },
     include: {
-      helfer: true,
-      _count: { select: { helfer: true } }
+      helfer: { include: { kategorie: true } },
+      _count: { select: { helfer: true } },
     },
-    orderBy: { name: 'asc' }
+    orderBy: { name: 'asc' },
   })
 
   const uebersicht = jaegerschaften.map(j => ({
@@ -38,27 +37,25 @@ router.get('/uebersicht', authenticate, requireAdmin, async (req, res) => {
     helferGesamt: j.helfer.length,
     bestaetigt: j.helfer.filter(h => h.status === 'BESTAETIGT').length,
     ausstehend: j.helfer.filter(h => h.status === 'AUSSTEHEND').length,
-    details: j.helfer
+    details: j.helfer,
   }))
-
   res.json(uebersicht)
 })
 
-// POST /api/helfer
 router.post('/', authenticate, async (req, res) => {
-  const { name, aufgabe, jaegerschaftId } = req.body
+  const { name, kategorieId, jaegerschaftId } = req.body
 
   if (req.user.role !== 'ADMIN' && req.user.jaegerschaftId !== jaegerschaftId) {
     return res.status(403).json({ error: 'Kein Zugriff' })
   }
 
   const h = await prisma.helfer.create({
-    data: { name, aufgabe, jaegerschaftId }
+    data: { name, kategorieId: parseInt(kategorieId), jaegerschaftId },
+    include: { kategorie: true },
   })
   res.status(201).json(h)
 })
 
-// PATCH /api/helfer/:id  (Status ändern)
 router.patch('/:id', authenticate, async (req, res) => {
   const helfer = await prisma.helfer.findUnique({ where: { id: parseInt(req.params.id) } })
   if (!helfer) return res.status(404).json({ error: 'Nicht gefunden' })
@@ -67,15 +64,19 @@ router.patch('/:id', authenticate, async (req, res) => {
     return res.status(403).json({ error: 'Kein Zugriff' })
   }
 
-  const { name, aufgabe, status } = req.body
+  const { name, kategorieId, status } = req.body
   const updated = await prisma.helfer.update({
     where: { id: parseInt(req.params.id) },
-    data: { name, aufgabe, status }
+    data: {
+      ...(name !== undefined && { name }),
+      ...(kategorieId !== undefined && { kategorieId: parseInt(kategorieId) }),
+      ...(status !== undefined && { status }),
+    },
+    include: { kategorie: true },
   })
   res.json(updated)
 })
 
-// DELETE /api/helfer/:id
 router.delete('/:id', authenticate, async (req, res) => {
   const helfer = await prisma.helfer.findUnique({ where: { id: parseInt(req.params.id) } })
   if (!helfer) return res.status(404).json({ error: 'Nicht gefunden' })
