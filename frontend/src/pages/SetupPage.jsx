@@ -42,20 +42,23 @@ export default function SetupPage() {
 
   if (done) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-jagd-50 to-white flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 max-w-md w-full text-center">
-          <div className="w-16 h-16 bg-jagd-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <div
+        className="min-h-screen flex items-center justify-center p-4"
+        style={{ background: 'linear-gradient(135deg, #122503 0%, #1C3905 40%, #2C5609 100%)' }}
+      >
+        <div className="bg-white rounded-2xl shadow-2xl p-10 max-w-md w-full text-center">
+          <div className="w-16 h-16 bg-jagd-50 rounded-full flex items-center justify-center mx-auto mb-5 border-2 border-jagd-200">
             <svg className="w-8 h-8 text-jagd-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h1 className="text-xl font-semibold text-gray-900 mb-2">Einrichtung abgeschlossen</h1>
-          <p className="text-sm text-gray-500 mb-6">
-            Der Admin-Account wurde angelegt. Du kannst dich jetzt anmelden.
+          <h1 className="text-xl font-bold text-gray-900 mb-2">Einrichtung abgeschlossen</h1>
+          <p className="text-sm text-gray-500 mb-7">
+            Der Administrator-Account wurde erfolgreich angelegt. Sie können sich jetzt anmelden.
           </p>
           <button
             onClick={() => navigate('/login')}
-            className="w-full bg-jagd-500 text-white rounded-xl py-2.5 text-sm font-medium hover:bg-jagd-600 transition-colors"
+            className="w-full bg-jagd-600 text-white rounded-lg py-2.5 text-sm font-semibold hover:bg-jagd-700 transition-colors shadow-sm"
           >
             Zur Anmeldung
           </button>
@@ -65,97 +68,113 @@ export default function SetupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-jagd-50 to-white flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 max-w-md w-full">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-jagd-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-jagd-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+    <div
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{ background: 'linear-gradient(135deg, #122503 0%, #1C3905 40%, #2C5609 100%)' }}
+    >
+      <div className="w-full max-w-md">
+        {/* Logo */}
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-jagd-600 shadow-lg mb-4">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-7 h-7">
+              <circle cx="12" cy="12" r="8" />
+              <circle cx="12" cy="12" r="3" fill="white" stroke="none" />
+              <line x1="12" y1="4" x2="12" y2="7" />
+              <line x1="12" y1="17" x2="12" y2="20" />
+              <line x1="4" y1="12" x2="7" y2="12" />
+              <line x1="17" y1="12" x2="20" y2="12" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">{appTitle}</h1>
-          <p className="text-sm text-gray-500 mt-1">Ersteinrichtung — Admin-Account anlegen</p>
+          <h1 className="text-2xl font-bold text-white">{appTitle}</h1>
+          <p className="text-jagd-300 text-sm mt-1">Ersteinrichtung</p>
         </div>
 
-        {/* Schritt-Indikator */}
-        <div className="flex items-center gap-2 mb-6">
-          <div className="flex-1 h-1 rounded-full bg-jagd-500" />
-          <span className="text-xs text-gray-400 whitespace-nowrap">Schritt 1 von 1</span>
-          <div className="flex-1 h-1 rounded-full bg-gray-100" />
-        </div>
+        {/* Card */}
+        <div className="bg-white rounded-2xl shadow-2xl p-8">
+          <div className="mb-6">
+            <h2 className="text-lg font-bold text-gray-900">Administrator-Account anlegen</h2>
+            <p className="text-sm text-gray-500 mt-1">
+              Legen Sie den ersten Kreisschießwart-Account an. Dieser Schritt ist nur einmal möglich.
+            </p>
+          </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Progress */}
+          <div className="flex items-center gap-2 mb-6">
+            <div className="flex-1 h-1.5 rounded-full bg-jagd-500" />
+            <span className="text-xs text-gray-400 whitespace-nowrap">Schritt 1 von 1</span>
+            <div className="flex-1 h-1.5 rounded-full bg-gray-100" />
+          </div>
+
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
+            <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700 mb-5 flex items-start gap-2">
+              <svg className="w-4 h-4 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
               {error}
             </div>
           )}
 
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
-              Name des Kreisschießwarts
-            </label>
-            <input
-              type="text"
-              required
-              autoFocus
-              placeholder="Vorname Nachname"
-              value={form.name}
-              onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-              className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-jagd-500"
-            />
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Name des Kreisschießwarts
+              </label>
+              <input
+                type="text"
+                required
+                autoFocus
+                placeholder="Vorname Nachname"
+                value={form.name}
+                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                className="w-full border border-gray-300 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-jagd-500 focus:border-transparent transition-shadow"
+              />
+            </div>
 
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">E-Mail</label>
-            <input
-              type="email"
-              required
-              placeholder="admin@example.de"
-              value={form.email}
-              onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-              className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-jagd-500"
-            />
-          </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">E-Mail-Adresse</label>
+              <input
+                type="email"
+                required
+                placeholder="admin@jaegerschaft.de"
+                value={form.email}
+                onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                className="w-full border border-gray-300 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-jagd-500 focus:border-transparent transition-shadow"
+              />
+            </div>
 
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Passwort</label>
-            <input
-              type="password"
-              required
-              placeholder="Mindestens 8 Zeichen"
-              value={form.password}
-              onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-              className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-jagd-500"
-            />
-          </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Passwort</label>
+              <input
+                type="password"
+                required
+                placeholder="Mindestens 8 Zeichen"
+                value={form.password}
+                onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+                className="w-full border border-gray-300 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-jagd-500 focus:border-transparent transition-shadow"
+              />
+            </div>
 
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Passwort bestätigen</label>
-            <input
-              type="password"
-              required
-              placeholder="Passwort wiederholen"
-              value={form.passwordConfirm}
-              onChange={e => setForm(f => ({ ...f, passwordConfirm: e.target.value }))}
-              className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-jagd-500"
-            />
-          </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Passwort bestätigen</label>
+              <input
+                type="password"
+                required
+                placeholder="Passwort wiederholen"
+                value={form.passwordConfirm}
+                onChange={e => setForm(f => ({ ...f, passwordConfirm: e.target.value }))}
+                className="w-full border border-gray-300 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-jagd-500 focus:border-transparent transition-shadow"
+              />
+            </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-jagd-500 text-white rounded-xl py-2.5 text-sm font-medium hover:bg-jagd-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors mt-2"
-          >
-            {loading ? 'Wird eingerichtet…' : 'Admin-Account anlegen'}
-          </button>
-        </form>
-
-        <p className="text-xs text-gray-400 text-center mt-6">
-          Dieser Schritt kann nur einmal ausgeführt werden.
-        </p>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-jagd-600 text-white rounded-lg py-2.5 text-sm font-semibold hover:bg-jagd-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors mt-2 shadow-sm"
+            >
+              {loading ? 'Wird eingerichtet…' : 'Administrator-Account anlegen'}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   )
