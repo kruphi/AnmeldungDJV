@@ -75,6 +75,7 @@ model Jaegerschaft {
   schuetzen       Schuetze[]
   helfer          Helfer[]
   obmaenner       User[]
+  mannschaften    Mannschaft[]
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 }
@@ -82,16 +83,30 @@ model Jaegerschaft {
 // ─── Schützen ──────────────────────────────────────────────────────────────
 
 model Schuetze {
-  id              Int           @id @default(autoincrement())
-  name            String
-  mitgliedsnummer String
-  disziplin       Disziplin
-  djvGruppe       DjvGruppe
-  jaegerschaft    Jaegerschaft  @relation(fields: [jaegerschaftId], references: [id])
+  id              Int                  @id @default(autoincrement())
+  vorname         String
+  nachname        String
+  mitgliedsnummer String?
+  jahrgang        Int?
+  jungjaeger      Boolean              @default(false)
+  jungjaegerSeit  Int?
+  dame            Boolean              @default(false)
+  nadel           Nadel?
+  disziplin       Disziplin?
+  djvGruppe       DjvGruppe?
+  jaegerschaft    Jaegerschaft         @relation(fields: [jaegerschaftId], references: [id])
   jaegerschaftId  Int
   ergebnisse      Ergebnis[]
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  mannschaften    MannschaftSchuetze[]
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+}
+
+enum Nadel {
+  BRONZE
+  SILBER
+  GOLD
+  SONDERGOLD
 }
 
 enum Disziplin {
@@ -105,6 +120,35 @@ enum DjvGruppe {
   GRUPPE_A
   GRUPPE_B
   GRUPPE_C
+}
+
+// ─── Mannschaften ──────────────────────────────────────────────────────────
+
+model Mannschaft {
+  id             Int                  @id @default(autoincrement())
+  name           String
+  typ            MannschaftTyp
+  jaegerschaft   Jaegerschaft         @relation(fields: [jaegerschaftId], references: [id])
+  jaegerschaftId Int
+  schuetzen      MannschaftSchuetze[]
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+}
+
+enum MannschaftTyp {
+  A
+  B
+}
+
+model MannschaftSchuetze {
+  id           Int        @id @default(autoincrement())
+  mannschaft   Mannschaft @relation(fields: [mannschaftId], references: [id], onDelete: Cascade)
+  mannschaftId Int
+  schuetze     Schuetze   @relation(fields: [schuetzeId], references: [id])
+  schuetzeId   Int
+  position     Int        @default(0)
+
+  @@unique([mannschaftId, schuetzeId])
 }
 
 // ─── Helfer ────────────────────────────────────────────────────────────────

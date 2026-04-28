@@ -83,7 +83,7 @@ export default function ErgebnissePage() {
                 setForm(f => ({ ...f, schuetzeId: e.target.value, disziplin: s?.disziplin || '' }))
               }} required>
               <option value="">– wählen –</option>
-              {schuetzen.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+              {schuetzen.map(s => <option key={s.id} value={s.id}>{s.vorname} {s.nachname}</option>)}
             </select>
           </div>
           <div>
@@ -124,7 +124,7 @@ export default function ErgebnissePage() {
             <div key={e.id} className="flex items-center gap-3 px-5 py-3 border-b border-gray-50 last:border-0">
               <div className={`w-6 text-sm font-semibold ${i === 0 ? 'text-jagd-600' : 'text-gray-400'}`}>{i + 1}.</div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900">{e.schuetze?.name}</p>
+                <p className="text-sm font-medium text-gray-900">{e.schuetze?.vorname} {e.schuetze?.nachname}</p>
                 <p className="text-xs text-gray-400">{DISZIPLIN_LABEL[e.disziplin]}</p>
               </div>
               <span className="text-sm font-semibold text-gray-900">{e.punkte} Pkt</span>

@@ -6,14 +6,13 @@ const router = Router()
 
 // GET /api/schuetzen?jaegerschaftId=X  (oder ohne Parameter für Admin → alle)
 router.get('/', authenticate, async (req, res) => {
-  // Admin ohne Filter → alle Schützen mit Jägerschaft-Info
   if (req.user.role === 'ADMIN' && !req.query.jaegerschaftId) {
     const schuetzen = await prisma.schuetze.findMany({
       include: {
         jaegerschaft: { select: { id: true, name: true } },
         ergebnisse: true,
       },
-      orderBy: [{ jaegerschaft: { name: 'asc' } }, { name: 'asc' }],
+      orderBy: [{ jaegerschaft: { name: 'asc' } }, { nachname: 'asc' }],
     })
     return res.json(schuetzen)
   }
@@ -28,22 +27,33 @@ router.get('/', authenticate, async (req, res) => {
   const schuetzen = await prisma.schuetze.findMany({
     where: { jaegerschaftId },
     include: { ergebnisse: true },
-    orderBy: { name: 'asc' },
+    orderBy: { nachname: 'asc' },
   })
   res.json(schuetzen)
 })
 
 // POST /api/schuetzen
 router.post('/', authenticate, async (req, res) => {
-  const { name, mitgliedsnummer, disziplin, djvGruppe, jaegerschaftId } = req.body
+  const { vorname, nachname, mitgliedsnummer, jahrgang, jungjaeger, jungjaegerSeit, dame, nadel, disziplin, djvGruppe, jaegerschaftId } = req.body
 
-  // Zugriffsprüfung
   if (req.user.role !== 'ADMIN' && req.user.jaegerschaftId !== jaegerschaftId) {
     return res.status(403).json({ error: 'Kein Zugriff' })
   }
 
   const s = await prisma.schuetze.create({
-    data: { name, mitgliedsnummer, disziplin, djvGruppe, jaegerschaftId }
+    data: {
+      vorname,
+      nachname,
+      mitgliedsnummer: mitgliedsnummer || null,
+      jahrgang: jahrgang ? parseInt(jahrgang) : null,
+      jungjaeger: !!jungjaeger,
+      jungjaegerSeit: jungjaegerSeit ? parseInt(jungjaegerSeit) : null,
+      dame: !!dame,
+      nadel: nadel || null,
+      disziplin: disziplin || null,
+      djvGruppe: djvGruppe || null,
+      jaegerschaftId,
+    }
   })
   res.status(201).json(s)
 })
@@ -57,10 +67,21 @@ router.patch('/:id', authenticate, async (req, res) => {
     return res.status(403).json({ error: 'Kein Zugriff' })
   }
 
-  const { name, mitgliedsnummer, disziplin, djvGruppe } = req.body
+  const { vorname, nachname, mitgliedsnummer, jahrgang, jungjaeger, jungjaegerSeit, dame, nadel, disziplin, djvGruppe } = req.body
   const updated = await prisma.schuetze.update({
     where: { id: parseInt(req.params.id) },
-    data: { name, mitgliedsnummer, disziplin, djvGruppe }
+    data: {
+      vorname,
+      nachname,
+      mitgliedsnummer: mitgliedsnummer || null,
+      jahrgang: jahrgang ? parseInt(jahrgang) : null,
+      jungjaeger: !!jungjaeger,
+      jungjaegerSeit: jungjaegerSeit ? parseInt(jungjaegerSeit) : null,
+      dame: !!dame,
+      nadel: nadel || null,
+      disziplin: disziplin || null,
+      djvGruppe: djvGruppe || null,
+    }
   })
   res.json(updated)
 })
