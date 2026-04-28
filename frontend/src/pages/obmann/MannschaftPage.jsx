@@ -9,7 +9,6 @@ const NADEL_CLS = {
   GOLD: 'bg-yellow-100 text-yellow-800',
   SONDERGOLD: 'bg-yellow-200 text-yellow-900',
 }
-const DISZIPLIN_LABEL = { BUECHSE: 'Büchse', FLINTE: 'Flinte', PISTOLE: 'Pistole', KOMBINATION: 'Kombination' }
 
 const isASchuetze = (s) => s.nadel === 'GOLD' || s.nadel === 'SONDERGOLD'
 const schuetzeName = (s) => `${s.vorname} ${s.nachname}`
@@ -27,15 +26,17 @@ function SchuetzeBadges({ s }) {
       {isASchuetze(s) && (
         <span className="text-xs px-1.5 py-0.5 rounded font-medium bg-jagd-100 text-jagd-800">A-Schütze</span>
       )}
-      {!isASchuetze(s) && s.nadel && (
-        <span className="text-xs px-1.5 py-0.5 rounded font-medium bg-blue-50 text-blue-700">B-Schütze</span>
-      )}
       {s.dame && (
         <span className="text-xs px-1.5 py-0.5 rounded font-medium bg-pink-50 text-pink-700">Dame</span>
       )}
       {s.jungjaeger && (
         <span className="text-xs px-1.5 py-0.5 rounded font-medium bg-emerald-50 text-emerald-700">
           JungJäger{s.jungjaegerSeit ? ` (seit ${s.jungjaegerSeit})` : ''}
+        </span>
+      )}
+      {s.mannschaft && (
+        <span className="text-xs px-1.5 py-0.5 rounded font-medium bg-blue-50 text-blue-700">
+          {s.mannschaft.mannschaft.name}
         </span>
       )}
     </div>
@@ -49,10 +50,7 @@ function AdminMannschaftView() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    apiFetch('/schuetzen')
-      .then(setSchuetzen)
-      .catch(() => {})
-      .finally(() => setLoading(false))
+    apiFetch('/schuetzen').then(setSchuetzen).catch(() => {}).finally(() => setLoading(false))
   }, [])
 
   if (loading) return <p className="text-gray-400 text-sm">Laden…</p>
@@ -70,11 +68,8 @@ function AdminMannschaftView() {
     <div className="max-w-4xl">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold text-gray-900">Alle Schützen</h1>
-        <select
-          value={filter}
-          onChange={e => setFilter(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-jagd-500"
-        >
+        <select value={filter} onChange={e => setFilter(e.target.value)}
+          className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-jagd-500">
           <option value="">Alle Jägerschaften</option>
           {Object.keys(grouped).sort().map(k => <option key={k} value={k}>{k}</option>)}
         </select>
@@ -91,7 +86,6 @@ function AdminMannschaftView() {
                 <SchuetzeBadges s={s} />
                 {s.jahrgang && <p className="text-xs text-gray-400 mt-0.5">Jg. {s.jahrgang}</p>}
               </div>
-              {s.disziplin && <span className="text-xs text-gray-400 mt-0.5">{DISZIPLIN_LABEL[s.disziplin]}</span>}
             </div>
           ))}
         </div>
@@ -103,9 +97,8 @@ function AdminMannschaftView() {
 
 // ── Schütze-Formular ──────────────────────────────────────────────────────────
 const emptyForm = {
-  vorname: '', nachname: '', mitgliedsnummer: '', jahrgang: '',
-  jungjaeger: false, jungjaegerSeit: '', dame: false,
-  nadel: '', disziplin: '', djvGruppe: '',
+  vorname: '', nachname: '', jahrgang: '',
+  jungjaeger: false, jungjaegerSeit: '', dame: false, nadel: '',
 }
 
 function SchuetzeForm({ initial, onSave, onCancel }) {
@@ -131,24 +124,11 @@ function SchuetzeForm({ initial, onSave, onCancel }) {
           value={form.jahrgang} onChange={e => set('jahrgang', e.target.value)} placeholder="z.B. 1975" />
       </div>
       <div>
-        <label className="block text-xs text-gray-500 mb-1">Mitgliedsnummer</label>
-        <input className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-jagd-500"
-          value={form.mitgliedsnummer} onChange={e => set('mitgliedsnummer', e.target.value)} />
-      </div>
-      <div>
         <label className="block text-xs text-gray-500 mb-1">Nadel</label>
         <select className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-jagd-500"
           value={form.nadel} onChange={e => set('nadel', e.target.value)}>
           <option value="">– keine –</option>
           {Object.entries(NADEL_LABEL).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-        </select>
-      </div>
-      <div>
-        <label className="block text-xs text-gray-500 mb-1">Disziplin</label>
-        <select className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-jagd-500"
-          value={form.disziplin} onChange={e => set('disziplin', e.target.value)}>
-          <option value="">– keine –</option>
-          {Object.entries(DISZIPLIN_LABEL).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
         </select>
       </div>
       <div className="col-span-2 flex flex-wrap gap-4">
@@ -176,9 +156,7 @@ function SchuetzeForm({ initial, onSave, onCancel }) {
       <div className="col-span-2 flex justify-end gap-2">
         {onCancel && (
           <button type="button" onClick={onCancel}
-            className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-800">
-            Abbrechen
-          </button>
+            className="px-4 py-2 text-sm text-gray-500 hover:text-gray-800">Abbrechen</button>
         )}
         <button type="submit"
           className="px-4 py-2 text-sm font-medium bg-jagd-500 text-white rounded-lg hover:bg-jagd-600">
@@ -252,10 +230,9 @@ function SchuetzenTab({ jaegerschaftId, schuetzen, onRefresh }) {
                     <SchuetzeForm
                       initial={{
                         vorname: s.vorname, nachname: s.nachname,
-                        mitgliedsnummer: s.mitgliedsnummer ?? '',
                         jahrgang: s.jahrgang ?? '', jungjaeger: s.jungjaeger,
                         jungjaegerSeit: s.jungjaegerSeit ?? '', dame: s.dame,
-                        nadel: s.nadel ?? '', disziplin: s.disziplin ?? '', djvGruppe: s.djvGruppe ?? '',
+                        nadel: s.nadel ?? '',
                       }}
                       onSave={handleEdit}
                       onCancel={() => setEditing(null)}
@@ -269,7 +246,6 @@ function SchuetzenTab({ jaegerschaftId, schuetzen, onRefresh }) {
                       <SchuetzeBadges s={s} />
                       {s.jahrgang && <p className="text-xs text-gray-400 mt-0.5">Jg. {s.jahrgang}</p>}
                     </div>
-                    {s.disziplin && <span className="text-xs text-gray-400 mt-0.5">{DISZIPLIN_LABEL[s.disziplin]}</span>}
                     <button onClick={() => { setEditing(s); setShowForm(false) }}
                       className="text-xs text-gray-400 hover:text-jagd-600 px-2 py-1">Bearbeiten</button>
                     <button onClick={() => handleDelete(s.id)}
@@ -285,14 +261,17 @@ function SchuetzenTab({ jaegerschaftId, schuetzen, onRefresh }) {
   )
 }
 
-// ── Mannschaft-Drag-and-Drop-Builder ──────────────────────────────────────────
+// ── Mannschaft-Builder ────────────────────────────────────────────────────────
 function MannschaftBuilder({ mannschaft, alleSchuetzen, onClose, onRefresh }) {
   const [error, setError] = useState('')
   const dragId = useRef(null)
 
   const mitglieder = mannschaft.schuetzen.map(ms => ms.schuetze)
   const mitgliederIds = new Set(mitglieder.map(s => s.id))
-  const verfuegbar = alleSchuetzen.filter(s => !mitgliederIds.has(s.id))
+  // Schütze ist "vergeben" wenn er schon in einer anderen Mannschaft ist
+  const verfuegbar = alleSchuetzen.filter(s =>
+    !mitgliederIds.has(s.id) && (!s.mannschaft || s.mannschaft.mannschaft.id === mannschaft.id)
+  )
 
   const handleDropAdd = async (e) => {
     e.preventDefault()
@@ -300,8 +279,8 @@ function MannschaftBuilder({ mannschaft, alleSchuetzen, onClose, onRefresh }) {
     const id = dragId.current
     if (!id || mitgliederIds.has(id)) return
     const schuetze = alleSchuetzen.find(s => s.id === id)
-    if (mannschaft.typ === 'B' && isASchuetze(schuetze)) {
-      setError('A-Schützen (Gold/SonderGold) können nicht in eine B-Mannschaft.')
+    if (mannschaft.kategorie.nurBSchuetzen && isASchuetze(schuetze)) {
+      setError(`A-Schützen (Gold/SonderGold) können nicht in "${mannschaft.kategorie.name}" eingetragen werden.`)
       return
     }
     try {
@@ -322,8 +301,8 @@ function MannschaftBuilder({ mannschaft, alleSchuetzen, onClose, onRefresh }) {
       <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 bg-jagd-50">
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-semibold text-gray-800">{mannschaft.name}</h3>
-          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${mannschaft.typ === 'A' ? 'bg-jagd-200 text-jagd-900' : 'bg-blue-100 text-blue-800'}`}>
-            {mannschaft.typ}-Mannschaft
+          <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-jagd-200 text-jagd-900">
+            {mannschaft.kategorie.name}
           </span>
         </div>
         <button onClick={onClose} className="text-xs text-gray-400 hover:text-gray-700">✕ Schließen</button>
@@ -337,20 +316,19 @@ function MannschaftBuilder({ mannschaft, alleSchuetzen, onClose, onRefresh }) {
           <p className="text-xs font-semibold text-gray-500 mb-3 uppercase tracking-wide">Verfügbar</p>
           <div className="space-y-1.5 min-h-20">
             {verfuegbar.length === 0
-              ? <p className="text-xs text-gray-400 text-center py-4">Alle Schützen bereits zugeordnet.</p>
+              ? <p className="text-xs text-gray-400 text-center py-4">Keine Schützen verfügbar.</p>
               : verfuegbar.map(s => {
-                  const blocked = mannschaft.typ === 'B' && isASchuetze(s)
+                  const blocked = mannschaft.kategorie.nurBSchuetzen && isASchuetze(s)
                   return (
-                    <div
-                      key={s.id}
+                    <div key={s.id}
                       draggable={!blocked}
                       onDragStart={() => { dragId.current = s.id }}
+                      title={blocked ? 'A-Schütze kann nicht in diese Kategorie' : 'Ziehen zum Hinzufügen'}
                       className={`flex items-center gap-2 px-3 py-2 rounded-lg border select-none ${
                         blocked
                           ? 'border-red-100 bg-red-50 opacity-50 cursor-not-allowed'
                           : 'border-gray-200 bg-gray-50 hover:border-jagd-300 hover:bg-jagd-50 cursor-grab active:cursor-grabbing'
                       }`}
-                      title={blocked ? 'A-Schütze kann nicht in B-Mannschaft' : 'Ziehen um hinzuzufügen'}
                     >
                       {!blocked && <span className="text-gray-300 text-xs">⠿</span>}
                       <div className="flex-1 min-w-0">
@@ -367,12 +345,8 @@ function MannschaftBuilder({ mannschaft, alleSchuetzen, onClose, onRefresh }) {
           </div>
         </div>
 
-        {/* Mannschaft-Mitglieder / Drop-Zone (rechts) */}
-        <div
-          className="p-4"
-          onDragOver={e => e.preventDefault()}
-          onDrop={handleDropAdd}
-        >
+        {/* Mannschaft / Drop-Zone (rechts) */}
+        <div className="p-4" onDragOver={e => e.preventDefault()} onDrop={handleDropAdd}>
           <p className="text-xs font-semibold text-gray-500 mb-3 uppercase tracking-wide">
             In der Mannschaft ({mitglieder.length})
           </p>
@@ -380,8 +354,7 @@ function MannschaftBuilder({ mannschaft, alleSchuetzen, onClose, onRefresh }) {
             {mitglieder.length === 0
               ? <p className="text-xs text-gray-400 text-center py-4">Schützen von links hierher ziehen</p>
               : mitglieder.map(s => (
-                <div key={s.id}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg border border-jagd-200 bg-white">
+                <div key={s.id} className="flex items-center gap-2 px-3 py-2 rounded-lg border border-jagd-200 bg-white">
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-gray-800 truncate">{schuetzeName(s)}</p>
                     <div className="flex gap-1 flex-wrap">
@@ -402,9 +375,9 @@ function MannschaftBuilder({ mannschaft, alleSchuetzen, onClose, onRefresh }) {
 }
 
 // ── Mannschaften-Tab ──────────────────────────────────────────────────────────
-function MannschaftenTab({ jaegerschaftId, schuetzen, mannschaften, onRefresh }) {
+function MannschaftenTab({ jaegerschaftId, schuetzen, mannschaften, kategorien, onRefresh }) {
   const [showForm, setShowForm] = useState(false)
-  const [newForm, setNewForm] = useState({ name: '', typ: 'B' })
+  const [newForm, setNewForm] = useState({ name: '', kategorieId: '' })
   const [activeMannschaftId, setActiveMannschaftId] = useState(null)
   const [error, setError] = useState('')
 
@@ -412,8 +385,11 @@ function MannschaftenTab({ jaegerschaftId, schuetzen, mannschaften, onRefresh })
     e.preventDefault()
     setError('')
     try {
-      const created = await apiFetch('/mannschaften', { method: 'POST', body: { ...newForm, jaegerschaftId } })
-      setNewForm({ name: '', typ: 'B' })
+      const created = await apiFetch('/mannschaften', {
+        method: 'POST',
+        body: { ...newForm, kategorieId: parseInt(newForm.kategorieId), jaegerschaftId }
+      })
+      setNewForm({ name: '', kategorieId: kategorien[0]?.id ?? '' })
       setShowForm(false)
       setActiveMannschaftId(created.id)
       onRefresh()
@@ -455,32 +431,42 @@ function MannschaftenTab({ jaegerschaftId, schuetzen, mannschaften, onRefresh })
           )}
         </div>
         {showForm && (
-          <form onSubmit={handleCreate} className="flex gap-3 items-end flex-wrap">
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">Name</label>
-              <input
-                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-jagd-500"
-                value={newForm.name} onChange={e => setNewForm(f => ({ ...f, name: e.target.value }))}
-                placeholder="z.B. Mannschaft 1" required />
-            </div>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">Typ</label>
-              <select
-                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-jagd-500"
-                value={newForm.typ} onChange={e => setNewForm(f => ({ ...f, typ: e.target.value }))}>
-                <option value="A">A-Mannschaft</option>
-                <option value="B">B-Mannschaft</option>
-              </select>
-            </div>
-            <div className="flex gap-2">
-              <button type="button" onClick={() => setShowForm(false)}
-                className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700">Abbrechen</button>
-              <button type="submit"
-                className="px-4 py-2 text-sm font-medium bg-jagd-500 text-white rounded-lg hover:bg-jagd-600">
-                Anlegen
-              </button>
-            </div>
-          </form>
+          kategorien.length === 0
+            ? (
+              <p className="text-sm text-amber-700 bg-amber-50 rounded-lg px-4 py-3">
+                Noch keine Mannschafts-Kategorien konfiguriert. Bitte beim Kreisschießwart anfragen.
+              </p>
+            )
+            : (
+              <form onSubmit={handleCreate} className="flex gap-3 items-end flex-wrap">
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Name</label>
+                  <input
+                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-jagd-500"
+                    value={newForm.name} onChange={e => setNewForm(f => ({ ...f, name: e.target.value }))}
+                    placeholder="z.B. Mannschaft 1" required />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Kategorie</label>
+                  <select
+                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-jagd-500"
+                    value={newForm.kategorieId}
+                    onChange={e => setNewForm(f => ({ ...f, kategorieId: e.target.value }))}
+                    required>
+                    <option value="">– wählen –</option>
+                    {kategorien.map(k => <option key={k.id} value={k.id}>{k.name}</option>)}
+                  </select>
+                </div>
+                <div className="flex gap-2">
+                  <button type="button" onClick={() => setShowForm(false)}
+                    className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700">Abbrechen</button>
+                  <button type="submit"
+                    className="px-4 py-2 text-sm font-medium bg-jagd-500 text-white rounded-lg hover:bg-jagd-600">
+                    Anlegen
+                  </button>
+                </div>
+              </form>
+            )
         )}
       </div>
 
@@ -496,8 +482,8 @@ function MannschaftenTab({ jaegerschaftId, schuetzen, mannschaften, onRefresh })
               <div className="flex-1">
                 <p className="text-sm font-medium text-gray-900">{m.name}</p>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${m.typ === 'A' ? 'bg-jagd-100 text-jagd-800' : 'bg-blue-50 text-blue-700'}`}>
-                    {m.typ}-Mannschaft
+                  <span className="text-xs px-1.5 py-0.5 rounded-full font-medium bg-jagd-100 text-jagd-800">
+                    {m.kategorie.name}
                   </span>
                   <span className="text-xs text-gray-400">{m.schuetzen.length} Schützen</span>
                 </div>
@@ -524,6 +510,7 @@ export default function MannschaftPage() {
   const [tab, setTab] = useState('schuetzen')
   const [schuetzen, setSchuetzen] = useState([])
   const [mannschaften, setMannschaften] = useState([])
+  const [kategorien, setKategorien] = useState([])
   const [loading, setLoading] = useState(true)
 
   if (user?.role === 'ADMIN') return <AdminMannschaftView />
@@ -533,7 +520,8 @@ export default function MannschaftPage() {
     Promise.all([
       apiFetch(`/schuetzen?jaegerschaftId=${jaegerschaftId}`),
       apiFetch(`/mannschaften?jaegerschaftId=${jaegerschaftId}`),
-    ]).then(([s, m]) => { setSchuetzen(s); setMannschaften(m) })
+      apiFetch('/mannschaft-kategorien'),
+    ]).then(([s, m, k]) => { setSchuetzen(s); setMannschaften(m); setKategorien(k) })
       .catch(() => {})
       .finally(() => setLoading(false))
   }
@@ -570,7 +558,13 @@ export default function MannschaftPage() {
 
       {tab === 'schuetzen'
         ? <SchuetzenTab jaegerschaftId={jaegerschaftId} schuetzen={schuetzen} onRefresh={load} />
-        : <MannschaftenTab jaegerschaftId={jaegerschaftId} schuetzen={schuetzen} mannschaften={mannschaften} onRefresh={load} />
+        : <MannschaftenTab
+            jaegerschaftId={jaegerschaftId}
+            schuetzen={schuetzen}
+            mannschaften={mannschaften}
+            kategorien={kategorien}
+            onRefresh={load}
+          />
       }
     </div>
   )

@@ -4,23 +4,20 @@ import { authenticate } from '../middleware/auth.js'
 
 const router = Router()
 
-const isASchuetze = (schuetze) => schuetze.nadel === 'GOLD' || schuetze.nadel === 'SONDERGOLD'
+const isASchuetze = (s) => s.nadel === 'GOLD' || s.nadel === 'SONDERGOLD'
 
 const include = {
+  kategorie: true,
   schuetzen: {
     include: { schuetze: true },
     orderBy: { position: 'asc' },
   },
 }
 
-// GET /api/mannschaften?jaegerschaftId=X
 router.get('/', authenticate, async (req, res) => {
   if (req.user.role === 'ADMIN' && !req.query.jaegerschaftId) {
     const mannschaften = await prisma.mannschaft.findMany({
-      include: {
-        ...include,
-        jaegerschaft: { select: { id: true, name: true } },
-      },
+      include: { ...include, jaegerschaft: { select: { id: true, name: true } } },
       orderBy: { name: 'asc' },
     })
     return res.json(mannschaften)
@@ -41,22 +38,20 @@ router.get('/', authenticate, async (req, res) => {
   res.json(mannschaften)
 })
 
-// POST /api/mannschaften
 router.post('/', authenticate, async (req, res) => {
-  const { name, typ, jaegerschaftId } = req.body
+  const { name, kategorieId, jaegerschaftId } = req.body
 
   if (req.user.role !== 'ADMIN' && req.user.jaegerschaftId !== jaegerschaftId) {
     return res.status(403).json({ error: 'Kein Zugriff' })
   }
 
   const m = await prisma.mannschaft.create({
-    data: { name, typ, jaegerschaftId },
+    data: { name, kategorieId: parseInt(kategorieId), jaegerschaftId },
     include,
   })
   res.status(201).json(m)
 })
 
-// PATCH /api/mannschaften/:id
 router.patch('/:id', authenticate, async (req, res) => {
   const mannschaft = await prisma.mannschaft.findUnique({ where: { id: parseInt(req.params.id) } })
   if (!mannschaft) return res.status(404).json({ error: 'Nicht gefunden' })
@@ -65,16 +60,15 @@ router.patch('/:id', authenticate, async (req, res) => {
     return res.status(403).json({ error: 'Kein Zugriff' })
   }
 
-  const { name, typ } = req.body
+  const { name, kategorieId } = req.body
   const updated = await prisma.mannschaft.update({
     where: { id: parseInt(req.params.id) },
-    data: { name, typ },
+    data: { name, kategorieId: parseInt(kategorieId) },
     include,
   })
   res.json(updated)
 })
 
-// DELETE /api/mannschaften/:id
 router.delete('/:id', authenticate, async (req, res) => {
   const mannschaft = await prisma.mannschaft.findUnique({ where: { id: parseInt(req.params.id) } })
   if (!mannschaft) return res.status(404).json({ error: 'Nicht gefunden' })
@@ -87,35 +81,38 @@ router.delete('/:id', authenticate, async (req, res) => {
   res.json({ ok: true })
 })
 
-// POST /api/mannschaften/:id/schuetzen  → Schütze hinzufügen
+// POST /:id/schuetzen — Schütze hinzufügen (mit A/B-Validierung via Kategorie)
 router.post('/:id/schuetzen', authenticate, async (req, res) => {
   const mannschaftId = parseInt(req.params.id)
-  const mannschaft = await prisma.mannschaft.findUnique({ where: { id: mannschaftId } })
+  const mannschaft = await prisma.mannschaft.findUnique({
+    where: { id: mannschaftId },
+    include: { kategorie: true },
+  })
   if (!mannschaft) return res.status(404).json({ error: 'Mannschaft nicht gefunden' })
 
   if (req.user.role !== 'ADMIN' && req.user.jaegerschaftId !== mannschaft.jaegerschaftId) {
     return res.status(403).json({ error: 'Kein Zugriff' })
   }
 
-  const { schuetzeId } = req.body
-  const schuetze = await prisma.schuetze.findUnique({ where: { id: parseInt(schuetzeId) } })
+  const schuetzeId = parseInt(req.body.schuetzeId)
+  const schuetze = await prisma.schuetze.findUnique({ where: { id: schuetzeId } })
   if (!schuetze) return res.status(404).json({ error: 'Schütze nicht gefunden' })
 
-  // A-Schütze darf nicht in B-Mannschaft
-  if (mannschaft.typ === 'B' && isASchuetze(schuetze)) {
-    return res.status(422).json({ error: 'A-Schütze (Gold/SonderGold) kann nicht in eine B-Mannschaft.' })
+  if (mannschaft.kategorie.nurBSchuetzen && isASchuetze(schuetze)) {
+    return res.status(422).json({
+      error: `A-Schützen (Gold/SonderGold) können nicht in eine "${mannschaft.kategorie.name}" eingetragen werden.`
+    })
   }
 
-  // Position = aktuelle Anzahl Mitglieder
   const count = await prisma.mannschaftSchuetze.count({ where: { mannschaftId } })
 
   const entry = await prisma.mannschaftSchuetze.create({
-    data: { mannschaftId, schuetzeId: schuetze.id, position: count },
+    data: { mannschaftId, schuetzeId, position: count },
   })
   res.status(201).json(entry)
 })
 
-// DELETE /api/mannschaften/:id/schuetzen/:schuetzeId  → Schütze entfernen
+// DELETE /:id/schuetzen/:schuetzeId — Schütze entfernen
 router.delete('/:id/schuetzen/:schuetzeId', authenticate, async (req, res) => {
   const mannschaftId = parseInt(req.params.id)
   const mannschaft = await prisma.mannschaft.findUnique({ where: { id: mannschaftId } })

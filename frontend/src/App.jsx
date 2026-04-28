@@ -18,6 +18,7 @@ import VeranstaltungPage from './pages/admin/VeranstaltungPage'
 import GruppenPage from './pages/admin/GruppenPage'
 import JaegerschaftenPage from './pages/admin/JaegerschaftenPage'
 import BenutzerPage from './pages/admin/BenutzerPage'
+import EinstellungenPage from './pages/admin/EinstellungenPage'
 
 function PrivateRoute({ children, adminOnly = false }) {
   const { user, setupRequired } = useAuth()
@@ -50,6 +51,7 @@ export default function App() {
             <Route path="admin/gruppen" element={<PrivateRoute adminOnly><GruppenPage /></PrivateRoute>} />
             <Route path="admin/jaegerschaften" element={<PrivateRoute adminOnly><JaegerschaftenPage /></PrivateRoute>} />
             <Route path="admin/benutzer" element={<PrivateRoute adminOnly><BenutzerPage /></PrivateRoute>} />
+            <Route path="admin/einstellungen" element={<PrivateRoute adminOnly><EinstellungenPage /></PrivateRoute>} />
           </Route>
         </Routes>
       </BrowserRouter>

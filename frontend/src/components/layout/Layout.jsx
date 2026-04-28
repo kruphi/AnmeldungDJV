@@ -15,6 +15,7 @@ const navAdmin = [
   { to: '/admin/gruppen',        label: 'Gruppen & Zeitplan' },
   { to: '/admin/jaegerschaften', label: 'Jägerschaften' },
   { to: '/admin/benutzer',       label: 'Benutzer' },
+  { to: '/admin/einstellungen',  label: 'Einstellungen' },
 ]
 
 function TabLink({ to, label, end }) {

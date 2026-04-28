@@ -78,10 +78,7 @@ export default function ErgebnissePage() {
           <div>
             <label className="block text-xs text-gray-500 mb-1">Schütze</label>
             <select className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-jagd-500"
-              value={form.schuetzeId} onChange={e => {
-                const s = schuetzen.find(s => s.id === parseInt(e.target.value))
-                setForm(f => ({ ...f, schuetzeId: e.target.value, disziplin: s?.disziplin || '' }))
-              }} required>
+              value={form.schuetzeId} onChange={e => setForm(f => ({ ...f, schuetzeId: e.target.value }))} required>
               <option value="">– wählen –</option>
               {schuetzen.map(s => <option key={s.id} value={s.id}>{s.vorname} {s.nachname}</option>)}
             </select>

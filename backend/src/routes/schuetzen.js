@@ -4,13 +4,13 @@ import { authenticate } from '../middleware/auth.js'
 
 const router = Router()
 
-// GET /api/schuetzen?jaegerschaftId=X  (oder ohne Parameter für Admin → alle)
 router.get('/', authenticate, async (req, res) => {
   if (req.user.role === 'ADMIN' && !req.query.jaegerschaftId) {
     const schuetzen = await prisma.schuetze.findMany({
       include: {
         jaegerschaft: { select: { id: true, name: true } },
         ergebnisse: true,
+        mannschaft: { include: { mannschaft: { select: { id: true, name: true } } } },
       },
       orderBy: [{ jaegerschaft: { name: 'asc' } }, { nachname: 'asc' }],
     })
@@ -26,15 +26,17 @@ router.get('/', authenticate, async (req, res) => {
 
   const schuetzen = await prisma.schuetze.findMany({
     where: { jaegerschaftId },
-    include: { ergebnisse: true },
+    include: {
+      ergebnisse: true,
+      mannschaft: { include: { mannschaft: { select: { id: true, name: true } } } },
+    },
     orderBy: { nachname: 'asc' },
   })
   res.json(schuetzen)
 })
 
-// POST /api/schuetzen
 router.post('/', authenticate, async (req, res) => {
-  const { vorname, nachname, mitgliedsnummer, jahrgang, jungjaeger, jungjaegerSeit, dame, nadel, disziplin, djvGruppe, jaegerschaftId } = req.body
+  const { vorname, nachname, jahrgang, jungjaeger, jungjaegerSeit, dame, nadel, jaegerschaftId } = req.body
 
   if (req.user.role !== 'ADMIN' && req.user.jaegerschaftId !== jaegerschaftId) {
     return res.status(403).json({ error: 'Kein Zugriff' })
@@ -44,21 +46,17 @@ router.post('/', authenticate, async (req, res) => {
     data: {
       vorname,
       nachname,
-      mitgliedsnummer: mitgliedsnummer || null,
       jahrgang: jahrgang ? parseInt(jahrgang) : null,
       jungjaeger: !!jungjaeger,
       jungjaegerSeit: jungjaegerSeit ? parseInt(jungjaegerSeit) : null,
       dame: !!dame,
       nadel: nadel || null,
-      disziplin: disziplin || null,
-      djvGruppe: djvGruppe || null,
       jaegerschaftId,
     }
   })
   res.status(201).json(s)
 })
 
-// PATCH /api/schuetzen/:id
 router.patch('/:id', authenticate, async (req, res) => {
   const schuetze = await prisma.schuetze.findUnique({ where: { id: parseInt(req.params.id) } })
   if (!schuetze) return res.status(404).json({ error: 'Nicht gefunden' })
@@ -67,26 +65,22 @@ router.patch('/:id', authenticate, async (req, res) => {
     return res.status(403).json({ error: 'Kein Zugriff' })
   }
 
-  const { vorname, nachname, mitgliedsnummer, jahrgang, jungjaeger, jungjaegerSeit, dame, nadel, disziplin, djvGruppe } = req.body
+  const { vorname, nachname, jahrgang, jungjaeger, jungjaegerSeit, dame, nadel } = req.body
   const updated = await prisma.schuetze.update({
     where: { id: parseInt(req.params.id) },
     data: {
       vorname,
       nachname,
-      mitgliedsnummer: mitgliedsnummer || null,
       jahrgang: jahrgang ? parseInt(jahrgang) : null,
       jungjaeger: !!jungjaeger,
       jungjaegerSeit: jungjaegerSeit ? parseInt(jungjaegerSeit) : null,
       dame: !!dame,
       nadel: nadel || null,
-      disziplin: disziplin || null,
-      djvGruppe: djvGruppe || null,
     }
   })
   res.json(updated)
 })
 
-// DELETE /api/schuetzen/:id
 router.delete('/:id', authenticate, async (req, res) => {
   const schuetze = await prisma.schuetze.findUnique({ where: { id: parseInt(req.params.id) } })
   if (!schuetze) return res.status(404).json({ error: 'Nicht gefunden' })

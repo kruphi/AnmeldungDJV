@@ -83,23 +83,20 @@ model Jaegerschaft {
 // ─── Schützen ──────────────────────────────────────────────────────────────
 
 model Schuetze {
-  id              Int                  @id @default(autoincrement())
-  vorname         String
-  nachname        String
-  mitgliedsnummer String?
-  jahrgang        Int?
-  jungjaeger      Boolean              @default(false)
-  jungjaegerSeit  Int?
-  dame            Boolean              @default(false)
-  nadel           Nadel?
-  disziplin       Disziplin?
-  djvGruppe       DjvGruppe?
-  jaegerschaft    Jaegerschaft         @relation(fields: [jaegerschaftId], references: [id])
-  jaegerschaftId  Int
-  ergebnisse      Ergebnis[]
-  mannschaften    MannschaftSchuetze[]
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
+  id             Int                  @id @default(autoincrement())
+  vorname        String
+  nachname       String
+  jahrgang       Int?
+  jungjaeger     Boolean              @default(false)
+  jungjaegerSeit Int?
+  dame           Boolean              @default(false)
+  nadel          Nadel?
+  jaegerschaft   Jaegerschaft         @relation(fields: [jaegerschaftId], references: [id])
+  jaegerschaftId Int
+  ergebnisse     Ergebnis[]
+  mannschaft     MannschaftSchuetze?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
 }
 
 enum Nadel {
@@ -109,17 +106,13 @@ enum Nadel {
   SONDERGOLD
 }
 
-enum Disziplin {
-  BUECHSE
-  FLINTE
-  PISTOLE
-  KOMBINATION
-}
+// ─── Mannschaft-Kategorien (konfigurierbar) ────────────────────────────────
 
-enum DjvGruppe {
-  GRUPPE_A
-  GRUPPE_B
-  GRUPPE_C
+model MannschaftKategorie {
+  id             Int          @id @default(autoincrement())
+  name           String       @unique
+  nurBSchuetzen  Boolean      @default(false)
+  mannschaften   Mannschaft[]
 }
 
 // ─── Mannschaften ──────────────────────────────────────────────────────────
@@ -127,7 +120,8 @@ enum DjvGruppe {
 model Mannschaft {
   id             Int                  @id @default(autoincrement())
   name           String
-  typ            MannschaftTyp
+  kategorie      MannschaftKategorie  @relation(fields: [kategorieId], references: [id])
+  kategorieId    Int
   jaegerschaft   Jaegerschaft         @relation(fields: [jaegerschaftId], references: [id])
   jaegerschaftId Int
   schuetzen      MannschaftSchuetze[]
@@ -135,20 +129,13 @@ model Mannschaft {
   updatedAt      DateTime             @updatedAt
 }
 
-enum MannschaftTyp {
-  A
-  B
-}
-
 model MannschaftSchuetze {
   id           Int        @id @default(autoincrement())
   mannschaft   Mannschaft @relation(fields: [mannschaftId], references: [id], onDelete: Cascade)
   mannschaftId Int
   schuetze     Schuetze   @relation(fields: [schuetzeId], references: [id])
-  schuetzeId   Int
+  schuetzeId   Int        @unique
   position     Int        @default(0)
-
-  @@unique([mannschaftId, schuetzeId])
 }
 
 // ─── Helfer ────────────────────────────────────────────────────────────────
@@ -187,4 +174,11 @@ model Ergebnis {
   notizen    String?
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
+}
+
+enum Disziplin {
+  BUECHSE
+  FLINTE
+  PISTOLE
+  KOMBINATION
 }
