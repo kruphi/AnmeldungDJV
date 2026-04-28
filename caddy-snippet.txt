@@ -1,11 +1,13 @@
-# Diesen Block in deine bestehende Caddyfile unter /opt/kruempelmann/server-infra einfügen
+# Diesen Block in /opt/kruempelmann/server-infra/Caddyfile einfügen.
+# Das Script add-app.sh generiert NUR einen frontend-Block — dieser hier
+# wird stattdessen benötigt, weil /api/* direkt ans Backend muss.
+#
+# Container-Namen passen sich an den Ordner-Namen an (Docker Compose Standard):
+#   Ordner: /opt/kruempelmann/jagdscheissen → Prefix: jagdscheissen
 
 jagdscheissen.kruempelmann.dev {
-    # Frontend
-    reverse_proxy jagdscheissen-frontend-1:80
-
-    # API-Requests ans Backend
     handle /api/* {
         reverse_proxy jagdscheissen-backend-1:3001
     }
+    reverse_proxy jagdscheissen-frontend-1:80
 }
